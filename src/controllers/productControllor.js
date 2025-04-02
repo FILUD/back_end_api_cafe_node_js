@@ -101,3 +101,57 @@ exports.deleteByIDProduct = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
+
+exports.updateProduct = async (req, res) => {
+    const { product_id } = req.params;
+    const { category_id, name, description, price, image, is_available, points_earned } = req.body;
+    
+    try {
+        // Check if product exists
+        const product = await Product.findByPk(product_id);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        // Check if new name is already taken by another product
+        if (name && name !== product.name) {
+            const existingProduct = await Product.findOne({ where: { name } });
+            if (existingProduct) {
+                return res.status(400).json({ message: 'Product name is already taken' });
+            }
+        }
+
+        // Update product fields
+        const updatedFields = {};
+        if (category_id !== undefined) updatedFields.category_id = category_id;
+        if (name !== undefined) updatedFields.name = name;
+        if (description !== undefined) updatedFields.description = description;
+        if (price !== undefined) updatedFields.price = price;
+        if (image !== undefined) updatedFields.image = image;
+        if (is_available !== undefined) updatedFields.is_available = is_available;
+        if (points_earned !== undefined) updatedFields.points_earned = points_earned;
+
+        // Perform the update
+        await Product.update(updatedFields, {
+            where: { product_id: product_id }
+        });
+
+        // Get the updated product to return
+        const updatedProduct = await Product.findByPk(product_id, {
+            include: [{
+                model: Category,
+                as: 'category',
+            }]
+        });
+
+        return res.status(200).json({ 
+            success: true, 
+            message: "Product updated successfully", 
+            product: updatedProduct 
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}

@@ -15,6 +15,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api', require('./src/routes/user')); 
 app.use('/api', require('./src/routes/categoryRoutes')); 
 app.use('/api', require('./src/routes/productRoutes')); 
+app.use('/api', require('./src/routes/inventoryRoutes')); 
 
 
 
